@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkeletalAnimationDemo", "TeapotAD\TeapotAD.vcxproj", "{FC5957EB-122F-43B9-B138-1F7281F4CF36}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		DebugOpt|x64 = DebugOpt|x64
+		DebugVS2015|x64 = DebugVS2015|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.Debug|x64.ActiveCfg = Debug|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.Debug|x64.Build.0 = Debug|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.DebugOpt|x64.ActiveCfg = Debug|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.DebugOpt|x64.Build.0 = Debug|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.DebugVS2015|x64.ActiveCfg = DebugVS2015|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.DebugVS2015|x64.Build.0 = DebugVS2015|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.Release|x64.ActiveCfg = Release|x64
+		{FC5957EB-122F-43B9-B138-1F7281F4CF36}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
