@@ -44,6 +44,18 @@ namespace SA
 	// An animated mesh structure which stores mesh related data 
 	struct sAnimatedMesh
 	{
+
+		sAnimatedMesh()
+		{
+
+			NumIndices = 0;
+			BaseVertex = 0;
+			BaseIndex = 0;
+		}
+
+		~sAnimatedMesh() {}
+
+
 		GLuint m_VertexArrayObject; 
 		GLuint m_VertexBufferObject;
 		GLuint m_IndexBufferObject;

@@ -69,8 +69,6 @@ namespace SA
 		{
 			SA::sAnimatedMesh& AnimMesh = GetMesh(i);
 
-			AnimMesh.BaseIndex = totalIndices;
-			AnimMesh.BaseVertex = totalVertices;
 
 			totalVertices += AnimMesh.NumVertices;
 			totalIndices += AnimMesh.NumIndices;
@@ -168,11 +166,9 @@ namespace SA
 
 	void SkeletalModel::UpdateBuffers()
 	{
-		//// Generate and populate the buffers with the transformed vertex attributes
+		// Generate and populate the buffers with the transformed vertex attributes
 		gl::BindBuffer(gl::ARRAY_BUFFER, m_VertexBufferObject);
 		gl::BufferSubData(gl::ARRAY_BUFFER, 0, vTotalTransformedVertices.size() * sizeof(VertexStruct), &vTotalTransformedVertices[0]);
-		//	gl::BufferSubData(gl::ARRAY_BUFFER,0, AnimMesh.NumVertices * sizeof(glm::vec3), &AnimMesh.pTransformedVertices[0]);
-
 
 		gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, m_IndexBufferObject);
 		gl::BufferSubData(gl::ELEMENT_ARRAY_BUFFER, 0, sizeof(vTotalIndices[0]) * vTotalIndices.size(), &vTotalIndices[0]);
@@ -184,11 +180,11 @@ namespace SA
 		//{
 		//	SA::sAnimatedMesh& AnimMesh = GetMesh(i);
 
-		//	//// Generate and populate the buffers with the transformed vertex attributes
+		//	// Generate and populate the buffers with the transformed vertex attributes
 		//	gl::BindBuffer(gl::ARRAY_BUFFER, AnimMesh.m_VertexBufferObject);
 		//	gl::BufferData(gl::ARRAY_BUFFER, AnimMesh.aTransformedVertexData.size() * sizeof(VertexStruct), &AnimMesh.aTransformedVertexData[0], 
 		//		gl::STATIC_DRAW);
-		////	gl::BufferSubData(gl::ARRAY_BUFFER,0, AnimMesh.NumVertices * sizeof(glm::vec3), &AnimMesh.pTransformedVertices[0]);
+		//	gl::BufferSubData(gl::ARRAY_BUFFER,0, AnimMesh.NumVertices * sizeof(glm::vec3), &AnimMesh.pTransformedVertices[0]);
 
 
 		//	gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, AnimMesh.m_IndexBufferObject);
@@ -201,10 +197,6 @@ namespace SA
 
 	void SkeletalModel::Update(float a_Dt)
 	{
-
-		//float TicksPerSecond = m_Animation.TicksPerSecond != 0 ? m_Animation.TicksPerSecond : 25.0f;
-		//float TimeInTicks = a_Dt * TicksPerSecond;
-		//m_AnimationTime = fmod(TimeInTicks, m_Animation.Duration);
 
 		m_AnimationTime = fmodf(m_AnimationTime + a_Dt * m_Animation.TicksPerSecond, m_Animation.Duration);
 
@@ -228,14 +220,12 @@ namespace SA
 				AnimMesh.BaseVertex);
 		}
 
-		//gl::DrawElements(gl::TRIANGLES, vTotalIndices.size(), gl::UNSIGNED_INT, 0);
-
 		//for (unsigned int i = 0; i < GetNumMeshes(); ++i)
 		//{
 		//	const SA::sAnimatedMesh& AnimMesh = GetMesh(i);
 
 
-		//	gl::BindVertexArray(AnimMesh.m_VertexArrayObject);
+		//	//gl::BindVertexArray(AnimMesh.m_VertexArrayObject);
 		//	gl::DrawElements(gl::TRIANGLES, AnimMesh.vIndices.size(), gl::UNSIGNED_INT, 0);
 		//}
 

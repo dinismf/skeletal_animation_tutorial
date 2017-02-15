@@ -59,7 +59,9 @@ void AnimationScene::update(float t)
 void AnimationScene::loadAnimatedModel()
 {
 	Assimp::Importer Importer;
+	//const aiScene* pScene = Importer.ReadFile("Assets/Fan_Done5_Rigged.fbx",
 	const aiScene* pScene = Importer.ReadFile("Assets/Minotaur@Attack.FBX",
+	//const aiScene* pScene = Importer.ReadFile("Assets/spidercollada.dae", 
 	//const aiScene* pScene = Importer.ReadFile("Assets/Majora.fbx",
 
 		aiProcess_LimitBoneWeights |
@@ -107,6 +109,9 @@ void AnimationScene::render(QuatCamera camera)
 
 	//Now set up the teapot 
 	model = mat4(1.0f);
+	//model = glm::translate(glm::vec3(0.0, -20.0, 0.0));
+	model = glm::scale(glm::vec3(0.3));
+
 	setMatrices(camera);
 
 	 //Set the Teapot material properties in the shader and render

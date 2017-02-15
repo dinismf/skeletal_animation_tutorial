@@ -25,9 +25,6 @@ namespace AssimpConverter
 	}
 
 
-
-
-
 	static glm::vec3 aiToGlm(const aiVector3D& v)
 	{
 		glm::vec3 out;
@@ -36,18 +33,10 @@ namespace AssimpConverter
 		return out;
 	}
 
-
-
-
-
 	static glm::quat aiToGlm(const aiQuaternion& v)
 	{
 		return glm::quat(v.w, v.x, v.y, v.z);
 	}
-
-
-
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Recursively add all nodes from scene to skeleton
@@ -78,13 +67,14 @@ namespace AssimpConverter
 	}
 
 
-
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Adds meshes to AnimatedModel and populates bones in skeleton with weights
 	static void AddMeshesAndBones(const aiScene* a_pScene, SkeletalModel& a_OutModel)
 	{
+
+		unsigned int totalVertices = 0;
+		unsigned int totalIndices = 0;
+
 		sSkeleton& Skeleton = a_OutModel.GetSkeleton();
 		//
 		for (unsigned int i = 0; i < a_pScene->mNumMeshes; ++i)
@@ -92,23 +82,18 @@ namespace AssimpConverter
 			aiMesh* pMesh = a_pScene->mMeshes[i];
 			//
 			sAnimatedMesh AnimMesh;
+
 			AnimMesh.NumVertices = pMesh->mNumVertices;
 			AnimMesh.NumIndices = pMesh->mNumFaces * 3;
 
-			AnimMesh.BaseIndex = 0;
-			AnimMesh.BaseVertex = 0;
+			AnimMesh.BaseIndex = totalIndices;
+			AnimMesh.BaseVertex = totalVertices;
 
-
-		/*	AnimMesh.pVertices = new glm::vec3[AnimMesh.NumVertices];
-			AnimMesh.pTransformedVertices = new glm::vec3[AnimMesh.NumVertices];
-			AnimMesh.pNormals = new glm::vec3[AnimMesh.NumVertices];
-			AnimMesh.pTransformedNormals = new glm::vec3[AnimMesh.NumVertices];
-
-			memcpy(AnimMesh.pVertices, pMesh->mVertices, AnimMesh.NumVertices * sizeof(aiVector3D));
-			memcpy(AnimMesh.pNormals, pMesh->mNormals, AnimMesh.NumVertices * sizeof(aiVector3D));*/
+			totalVertices += AnimMesh.NumVertices;
+			totalIndices += AnimMesh.NumIndices;
 
 			// Process vertices
-			for (GLuint i = 0; i < pMesh->mNumVertices; i++) {
+			for (GLuint i = 0; i < pMesh->mNumVertices; ++i) {
 
 				// Defining vertex struct 
 				VertexStruct vertex;
@@ -157,7 +142,7 @@ namespace AssimpConverter
 					//Bone.pWeights[i].VertexID = pBone->mWeights[i].mVertexId;
 					//Bone.pWeights[i].Weight = pBone->mWeights[i].mWeight;
 
-					Bone.pWeights[i].VertexID = pBone->mWeights[i].mVertexId;
+					Bone.pWeights[i].VertexID = AnimMesh.BaseVertex + pBone->mWeights[i].mVertexId;
 					Bone.pWeights[i].Weight = pBone->mWeights[i].mWeight;
 				}
 			}
@@ -166,10 +151,6 @@ namespace AssimpConverter
 			{
 				aiFace Face = pMesh->mFaces[i];
 				//CORE_ASSERT(Face.mNumIndices == 3);
-
-				/*AnimMesh.pIndices[i * 3 + 0] = Face.mIndices[0];
-				AnimMesh.pIndices[i * 3 + 1] = Face.mIndices[1];
-				AnimMesh.pIndices[i * 3 + 2] = Face.mIndices[2];*/
 
 				// Iterate through all the indices in the face
 				for (GLuint j = 0; j < Face.mNumIndices; j++) {
