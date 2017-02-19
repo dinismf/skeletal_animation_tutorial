@@ -6,9 +6,6 @@
 #include <GLFW/glfw3.h>
 #include "QuatCamera.h"
 
-namespace imat3111
-{
-
 class Scene
 {
 public:
@@ -23,7 +20,7 @@ public:
       This is called prior to every frame.  Use this
       to update your animation.
       */
-    virtual void update(float t ) = 0;
+    virtual void update(long long f_startTime, float f_Interval) = 0;
 
     /**
       Draw your scene.
@@ -41,7 +38,5 @@ public:
 protected:
 	bool m_animate;
 };
-
-}
 
 #endif // SCENE_H

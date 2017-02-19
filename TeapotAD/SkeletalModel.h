@@ -1,135 +1,140 @@
-#pragma once
+#ifndef SKELETALMODEL_H
+#define SKELETALMODEL_H
 
 #include "gl_core_4_3.hpp"
+#include "glm\glm.hpp"
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing fla
+#include <vector>
+#include <map>
+#include "Drawable.h"
+#include "Math3D.h"
+#include "glslprogram.h"
 
-#include "Types.h"
-
-namespace SA
+struct VertexStruct 
 {
-	class SkeletalModel
+	glm::vec3 position; //!< Vertex position 
+	glm::vec3 normal; //!< Vertex normal
+	glm::vec2 uvs; //!< Vertex uv's
+};
+
+class SkeletalModel : public Drawable
+{
+public:
+	SkeletalModel(GLSLProgram* shaderProgIn);
+
+	~SkeletalModel();
+
+	void LoadMesh(const std::string& Filename);
+
+	//static const unsigned int MAX_BONES = 100;
+
+	void BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Transforms);
+
+	void SetBoneTransform(unsigned int Index, const Matrix4f& Transform);
+
+	void render() const override;
+
+private:
+
+	struct BoneInfo
 	{
-	public:
-		SkeletalModel();
-		~SkeletalModel();
+		Matrix4f FinalTransformation;
+		Matrix4f BoneOffset;
 
-		void                            Update(float a_Dt);
-
-		unsigned int                    GetNumMeshes() const { return m_Meshes.size(); }
-		sAnimatedMesh&            GetMesh(unsigned int i) { return m_Meshes[i]; }
-		void                            AddMesh(const sAnimatedMesh& a_Mesh) { m_Meshes.push_back(a_Mesh); }
-
-		void                            SetGlobalInverseTransform(const glm::mat4x4& a_Transform) { m_GlobalInverseTransform = a_Transform; }
-		const glm::mat4x4&              GetGlobalInverseTransform() const { return m_GlobalInverseTransform; }
-
-		sSkeleton&                      GetSkeleton() { return m_Skeleton; }
-		const sSkeleton&                GetSkeleton() const { return m_Skeleton; }
-
-		sAnimation&                     GetAnimation() { return m_Animation; }
-		const sAnimation&               GetAnimation() const { return m_Animation; }
-
-		void                            Clear();
-
-		void PrepareToDraw();
-		void UpdateBuffers();
-
-		void Render();
-
-	private:
-		std::vector<sAnimatedMesh>      m_Meshes;
-
-		GLuint m_VertexArrayObject;
-		GLuint m_VertexBufferObject;
-		GLuint m_IndexBufferObject;
-
-		unsigned int totalVertices;
-		unsigned int totalIndices;
-		std::vector<VertexStruct> vTotalVertices;
-		std::vector<VertexStruct> vTotalTransformedVertices;
-		std::vector<GLuint> vTotalIndices;
-
-
-		sSkeleton                       m_Skeleton;
-		sAnimation                      m_Animation;
-		glm::mat4x4                     m_GlobalInverseTransform;
-
-		float                           m_AnimationTime;
-
-	private:
-		void                            ReadNodeHierarchy(float AnimationTime, sAnimation& a_Animation, sSkeleton& a_Skeleton, sBone& a_Bone, const glm::mat4x4& ParentTransform);
-		void                            TransformVertices(const sSkeleton& a_Skeleton);
+		BoneInfo()
+		{
+			BoneOffset.SetZero();
+			FinalTransformation.SetZero(); 
+		}
 	};
-}
 
-
-namespace SA
-{
-	// Helper functions
-	static glm::vec3                       NodeAnimation_FindInterpolatedPosition(const sNodeAnimation& a_NodeAnimation, float a_AnimationTime);
-	static glm::quat                       NodeAnimation_FindInterpolatedRotation(const sNodeAnimation& a_NodeAnimation, float a_AnimationTime);
-	template <typename _Ty> static  _Ty    NodeAnimation_FindInterpolatedValue(std::vector<sNodeAnimationKey<_Ty> > a_Keys, float a_AnimationTime);
-	template <typename _Ty> static unsigned int NodeAnimation_FindIndex(const _Ty& a_Keys, float a_AnimationTime);
-
-	extern const sNodeAnimation*           FindNodeAnim(const sAnimation& a_Animation, const std::string& a_NodeName);
-	extern glm::vec3                       InterpolateValue(const glm::vec3& a_Start, const glm::vec3& a_End, float a_Factor);
-	extern glm::quat                       InterpolateValue(const glm::quat& a_Start, const glm::quat& a_End, float a_Factor);
-	extern unsigned int                    Skeleton_FindBoneIndex(const sSkeleton& a_Skeleton, const std::string& a_Name);
-	extern sBone*                          Skeleton_FindBone(sSkeleton& a_Skeleton, const std::string& a_Name);
-}
-
-namespace SA
-{
-	glm::vec3 NodeAnimation_FindInterpolatedPosition(const sNodeAnimation& a_NodeAnimation, float a_AnimationTime)
+	struct VertexBoneData
 	{
-		return NodeAnimation_FindInterpolatedValue(a_NodeAnimation.PositionKeys, a_AnimationTime);
-	}
+		unsigned int IDs[4];
+		float Weights[4];
 
-
-
-
-
-	glm::quat NodeAnimation_FindInterpolatedRotation(const sNodeAnimation& a_NodeAnimation, float a_AnimationTime) 
-	{ 
-		return NodeAnimation_FindInterpolatedValue(a_NodeAnimation.RotationKeys, a_AnimationTime); 
-	}
-
-
-
-
-
-	template <typename _Ty>
-	_Ty NodeAnimation_FindInterpolatedValue(std::vector<sNodeAnimationKey<_Ty> > a_Keys, float a_AnimationTime)
-	{
-		if (a_Keys.size() == 1)
+		VertexBoneData()
 		{
-			return a_Keys[0].Value;
+			Reset();
 		}
 
-		unsigned int PositionIndex = NodeAnimation_FindIndex(a_Keys, a_AnimationTime);
-		unsigned int NextPositionIndex = (PositionIndex + 1);
-		//CORE_ASSERT(NextPositionIndex < a_Keys.size());
-		float DeltaTime = a_Keys[NextPositionIndex].Time - a_Keys[PositionIndex].Time;
-		float Factor = (a_AnimationTime - a_Keys[PositionIndex].Time) / DeltaTime;
-		//CORE_ASSERT(Factor >= 0.0f && Factor <= 1.0f);
-		const _Ty& StartPosition = a_Keys[PositionIndex].Value;
-		const _Ty& EndPosition = a_Keys[NextPositionIndex].Value;
-
-		return InterpolateValue(StartPosition, EndPosition, Factor);
-	}
-
-
-
-
-
-	template <typename _Ty>
-	unsigned int NodeAnimation_FindIndex(const _Ty& a_Keys, float a_AnimationTime)
-	{
-		for (unsigned int i = 0; i < a_Keys.size() - 1; ++i)
+		void Reset()
 		{
-			if (a_AnimationTime < a_Keys[i + 1].Time)
-				return i;
+			memset(IDs, 0, 4 * sizeof(IDs[0]));
+			memset(Weights, 0, 4 * sizeof(Weights[0]));
 		}
 
-		//CORE_ASSERT(false);
-		return -1;
-	}
-}
+		void AddBoneData(unsigned int BoneID, float Weight);
+	};
+	
+	void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
+	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+	void CalcInterpolatedTranslation(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+
+	unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+	unsigned int FindScale(float AnimationTime, const aiNodeAnim* pNodeAnim);
+	unsigned int FindTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
+	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform /*const glm::mat4& ParentTransform*/);
+
+
+	void InitFromScene(const aiScene* pScene, const std::string& Filename);
+	void InitMesh(unsigned int index, const aiMesh* paiMesh, std::vector<VertexStruct>& Vertices,
+		std::vector<GLuint>& Indices, std::vector<VertexBoneData>& Bones);
+
+	bool InitMaterials(const aiScene* pScene, const std::string& Filename);
+
+	void Clear();
+
+	GLSLProgram* m_pShaderProg;
+
+
+#define INVALID_MATERIAL 0xFFFFFFFF
+
+	GLuint m_VAO;
+	GLuint vbo;
+	GLuint ebo;
+	GLuint boneBo;
+	//GLuint m_boneLocation[100];
+	struct MeshEntry {
+
+		MeshEntry()
+		{
+
+			NumIndices = 0;
+			BaseVertex = 0;
+			BaseIndex = 0;
+			MaterialIndex = INVALID_MATERIAL;
+		}
+
+		~MeshEntry(){}
+
+
+		unsigned int BaseVertex;
+		unsigned int BaseIndex;
+		unsigned int NumIndices;
+		unsigned int MaterialIndex;
+	};
+
+	const aiScene* pScene;
+
+	Assimp::Importer Importer;
+
+	unsigned int m_NumBones;
+
+	std::map<std::string, unsigned int> m_BoneMapping; //!< Map of bone names to ids
+
+	std::vector<BoneInfo> m_BoneInfo;
+	
+	Matrix4f GlobalTransformation;
+	Matrix4f m_GlobalInverseTransform;
+
+	glm::mat4 toGlmMat4(const aiMatrix4x4* ai);
+
+	std::vector<MeshEntry> m_Entries;
+};
+
+#endif

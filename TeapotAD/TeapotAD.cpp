@@ -25,8 +25,6 @@
 #define MOVE_VELOCITY 0.01f
 #define ROTATE_VELOCITY 0.001f
 
-using namespace imat3111;
-
 //The GLFW Window
 GLFWwindow *window;
 
@@ -134,24 +132,24 @@ void update( float t )
 /////////////////////////////////////////////////////////////////////////////////////////////
 void mainLoop() {
 
-	double m_startTime = glfwGetTime();
+	long long f_startTime = glfwGetTime();
 
 	while( ! glfwWindowShouldClose(window) && !glfwGetKey(window, GLFW_KEY_ESCAPE) ) {
 		//GLUtils::checkForOpenGLError(__FILE__,__LINE__);
 
 		double fCurrentTime = glfwGetTime();
-		float fInterval = (fCurrentTime - m_startTime) /* 1000.0f*/;
+		float fInterval = (fCurrentTime - (double)f_startTime) /* 1000.0f*/;
 
 		update(fInterval);
 
-		scene->update(fInterval);
+		scene->update(f_startTime, fInterval);
 
 		scene->render(camera);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		m_startTime = fCurrentTime;
+		f_startTime = fCurrentTime;
 
 	}
 }

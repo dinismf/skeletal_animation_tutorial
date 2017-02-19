@@ -288,6 +288,23 @@ void GLSLProgram::setUniform( const char *name, bool val )
   gl::Uniform1i(loc, val);
 }
 
+void GLSLProgram::setUniformIndex(unsigned int Index, const Matrix4f& matIn)
+{
+	gl::UniformMatrix4fv(m_boneLocation[Index], 1, TRUE, (const GLfloat*)matIn.m);
+}
+
+void GLSLProgram::initialiseBoneUniforms()
+{
+	for (unsigned int i = 0; i < ui_BoneArraySize; i++) {
+
+		char Name[128];
+		memset(Name, 0, sizeof(Name));
+		_snprintf_s(Name, sizeof(Name), "gBones[%d]", i);
+		m_boneLocation[i] = gl::GetUniformLocation(handle, Name);
+	}
+}
+
+
 void GLSLProgram::printActiveUniforms() {
   GLint numUniforms = 0;
   gl::GetProgramInterfaceiv( handle, gl::UNIFORM, gl::ACTIVE_RESOURCES, &numUniforms);

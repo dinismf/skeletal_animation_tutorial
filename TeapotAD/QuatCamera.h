@@ -5,9 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace imat3111
-{
-
 class QuatCamera 
 {
 public:
@@ -61,8 +58,4 @@ private:
 
 	glm::mat4 _view;
 	glm::mat4 _projection;
-
-
 };
-
-}

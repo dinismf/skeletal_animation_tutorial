@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{8548a105-b9cf-4b5d-8060-8b1cb2cbb22b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Animation\OGLDEV">
+      <UniqueIdentifier>{94a47df8-2614-4570-8596-80557e2c4e3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation\OGLDEV">
+      <UniqueIdentifier>{d206668f-7ffd-4531-a0fc-d04ac617401f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -45,15 +51,6 @@
     <ClInclude Include="glutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssimpConverter.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletalModel.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Types.h">
-      <Filter>Header Files\Animation</Filter>
-    </ClInclude>
     <ClInclude Include="scene.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
@@ -72,6 +69,15 @@
     <ClInclude Include="AnimationScene.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Math3D.h">
+      <Filter>Header Files\Animation\OGLDEV</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>Header Files\Animation\OGLDEV</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalModel.h">
+      <Filter>Header Files\Animation\OGLDEV</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -85,12 +91,6 @@
     </ClCompile>
     <ClCompile Include="glutils.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssimpConverter.cpp">
-      <Filter>Source Files\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletalModel.cpp">
-      <Filter>Source Files\Animation</Filter>
     </ClCompile>
     <ClCompile Include="drawable.cpp">
       <Filter>Source Files\Scene</Filter>
@@ -106,6 +106,12 @@
     </ClCompile>
     <ClCompile Include="AnimationScene.cpp">
       <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Math3D.cpp">
+      <Filter>Source Files\Animation\OGLDEV</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalModel.cpp">
+      <Filter>Source Files\Animation\OGLDEV</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -7,8 +7,6 @@
 
 #include "defines.h"
 #include <iostream>
-using namespace imat3111;
-
 
 //World coordinate System Axes
 const glm::vec3 WORLDX = glm::vec3(1,0,0);
