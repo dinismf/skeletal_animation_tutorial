@@ -226,7 +226,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SkeletalModel.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="drawable.h" />
     <ClInclude Include="glslprogram.h" />
@@ -236,10 +235,9 @@
     <ClInclude Include="QuatCamera.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="AnimationScene.h" />
+    <ClInclude Include="SkeletalModel.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Util.h" />
-    <ClInclude Include="vboplane.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SkeletalModel.cpp" />
@@ -259,7 +257,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TeapotAD.cpp" />
-    <ClCompile Include="vboplane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\diffuse.frag" />

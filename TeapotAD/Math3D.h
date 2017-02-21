@@ -2,6 +2,9 @@
 #define	MATH_3D_H
 
 #include <stdio.h>
+#include "defines.h"
+#include <string.h>
+
 #ifdef WIN32
 #include <cmath>
 #else
@@ -13,10 +16,8 @@
 #include <assimp/matrix3x3.h>
 #include <assimp/matrix4x4.h>
 
-#include "util.h"
-
-#define ToRadian(x) (float)(((x) * 3.14159 / 180.0f))
-#define ToDegree(x) (float)(((x) * 180.0f / 3.14159))
+#define ToRadian(x) (float)(((x) * PI / 180.0f))
+#define ToDegree(x) (float)(((x) * 180.0f / PI))
 
 struct Vector2i
 {
@@ -198,7 +199,8 @@ public:
 
 	void SetZero()
 	{
-		ZERO_MEM(m);
+		//ZERO_MEM(m);
+		memset(m, 0, sizeof(m));
 	}
 
 	Matrix4f Transpose() const

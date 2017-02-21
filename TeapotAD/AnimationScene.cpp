@@ -39,13 +39,11 @@ void AnimationScene::initScene(QuatCamera camera)
  	//Set up the lighting
 	setLightParams(camera);
 
-	// Initialise skeletal mesh. 
+	// Initialise skeletal model. 
 	m_AnimatedModel = new SkeletalModel(prog);
-
-	m_AnimatedModel->LoadMesh("Assets/Minotaur@Attack.FBX");
-	//m_AnimatedModel->LoadMesh("Assets/Majora.fbx");
-
-	//m_AnimatedModel->setPosition(0, 0, -5);
+	
+	// Load the model from the given path. 
+	m_AnimatedModel->LoadMesh("Assets/Minotaur@Jump.FBX");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,36 +51,28 @@ void AnimationScene::initScene(QuatCamera camera)
 /////////////////////////////////////////////////////////////////////////////////////////////
 void AnimationScene::update(long long f_StartTime, float f_Interval)
 {
-	//m_AnimationModel.Update(t);
 	// Vector of bone transformation matrices. 
 	std::vector<Matrix4f> Transforms;
+	
+	// Obtains newly transformed matrices from the bone hierarchy at the given time. 
+	m_AnimatedModel->BoneTransform(f_Interval, Transforms);
 
-	float RunningTime = (float)(glfwGetTime() - (double)f_StartTime);
-
-
-	m_AnimatedModel->BoneTransform(RunningTime, Transforms);
-
+	// Passes each new bone transformation into the shader. 
 	for (unsigned int i = 0; i < Transforms.size(); i++) {
 		m_AnimatedModel->SetBoneTransform(i, Transforms[i]);
 	}
 
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Set up the lighting variables in the shader
 /////////////////////////////////////////////////////////////////////////////////////////////
 void AnimationScene::setLightParams(QuatCamera camera)
 {
-	vec3 worldLight = vec3(0.0f, 20.0f, 0.0f);
-	vec3 spotlightDirection = vec3(0.0f, -1.0f,  0.0f);
-	vec3 spotlightIntensity = vec3(0.3f, 0.3f, 0.3f);
+	vec3 worldLight = vec3(10.0f, 10.0f, 10.0f);
 
-	prog->setUniform("Spotlight.position", worldLight );
-	prog->setUniform("Spotlight.direction", spotlightDirection);
-	prog->setUniform("Spotlight.intensity", spotlightIntensity);
-	prog->setUniform("Spotlight.exponent", 2.0f);
-	prog->setUniform("Spotlight.cutoff", 20.0f);
+	prog->setUniform("lightIntensity", 0.5f, 0.5f, 0.5f);
+	prog->setUniform("lightPos", worldLight);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +85,7 @@ void AnimationScene::render(QuatCamera camera)
 	// Model matrix 
 	model = mat4(1.0f);
 	//model = glm::translate(glm::vec3(0.0, -20.0, 0.0));
-	//model = glm::scale(glm::vec3(0.2));
+	model = glm::scale(glm::vec3(0.2f));
 
 	setMatrices(camera);
 
@@ -136,7 +126,7 @@ void AnimationScene::resize(QuatCamera camera, int w, int h)
     gl::Viewport(0,0,w,h);
     width = w;
     height = h;
-	camera.setAspectRatio((float)w/h);
+	camera.setAspectRatio((float)width/height);
 
 }
 

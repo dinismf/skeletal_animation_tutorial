@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Animation">
-      <UniqueIdentifier>{fc5dbbea-21b7-46f7-bd90-ed79b83ff20e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Animation">
       <UniqueIdentifier>{75c356bd-723d-4263-8628-8d68c1fddfb9}</UniqueIdentifier>
     </Filter>
@@ -25,11 +22,11 @@
     <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{8548a105-b9cf-4b5d-8060-8b1cb2cbb22b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Animation\OGLDEV">
-      <UniqueIdentifier>{94a47df8-2614-4570-8596-80557e2c4e3c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Animation\OGLDEV">
       <UniqueIdentifier>{d206668f-7ffd-4531-a0fc-d04ac617401f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OGL DEV">
+      <UniqueIdentifier>{b2695b36-1a60-46d7-87d2-d842b77bd84f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +57,6 @@
     <ClInclude Include="glslprogram.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="vboplane.h">
-      <Filter>Header Files\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="drawable.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
@@ -70,13 +64,10 @@
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Math3D.h">
-      <Filter>Header Files\Animation\OGLDEV</Filter>
-    </ClInclude>
-    <ClInclude Include="Util.h">
-      <Filter>Header Files\Animation\OGLDEV</Filter>
+      <Filter>Header Files\OGL DEV</Filter>
     </ClInclude>
     <ClInclude Include="SkeletalModel.h">
-      <Filter>Header Files\Animation\OGLDEV</Filter>
+      <Filter>Header Files\OGL DEV</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,9 +90,6 @@
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="QuatCamera.cpp">
-      <Filter>Source Files\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="vboplane.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="AnimationScene.cpp">

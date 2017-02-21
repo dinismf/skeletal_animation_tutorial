@@ -4,37 +4,29 @@
 SkeletalModel::SkeletalModel(GLSLProgram* shaderProgIn)
 {
 	m_VAO = 0;
+
 	pScene = NULL;
 
-	//setShader(AssetManager::AssetManagerInstance()->getShaderManager()->getShaderProgram("deferred"));
-	//setPosition(glm::vec3(0.0f, 0.0f, 0.0f)); //!< Sets the position of the object using a vec3
-	//setRotation(glm::quat(0.0f, glm::vec3(1.0f, 0.0f, 0.0f))); //!< Sets the rotation of the object using a quaternion
-	//setScale(glm::vec3(0.7f, 0.7f, 0.7f)); //!< Sets the scale of the object 
+	// Initialise the total number of bones to 0. 
 	m_NumBones = 0;
 
+	// Obtain pointer to shader program to use for rendering. 
 	m_pShaderProg = shaderProgIn;
 
 }
 
 SkeletalModel::~SkeletalModel()
 {
-
+	Clear();
 }
-
 
 void SkeletalModel::Clear()
 {
-
-	//if (m_Buffers[0] != 0) {
-	//	glDeleteBuffers(ARRAY_SIZE_IN_ELEMENTS(m_Buffers), m_Buffers);
-	//}
-
 	if (m_VAO != 0) {
 		gl::DeleteVertexArrays(1, &m_VAO);
 		m_VAO = 0;
 	}
 }
-
 
 void SkeletalModel::LoadMesh(const std::string& Filename)
 {
@@ -45,11 +37,10 @@ void SkeletalModel::LoadMesh(const std::string& Filename)
 	gl::GenVertexArrays(1, &m_VAO);
 	gl::BindVertexArray(m_VAO);
 
+	// Generate the buffers for the vertices atttributes
 	gl::GenBuffers(1, &vbo);
 	gl::GenBuffers(1, &ebo);
 	gl::GenBuffers(1, &boneBo);
-
-	// Create the buffers for the vertices atttributes
 
 	pScene = Importer.ReadFile(Filename.c_str(), 
 		aiProcess_JoinIdenticalVertices |
@@ -64,7 +55,6 @@ void SkeletalModel::LoadMesh(const std::string& Filename)
 		m_GlobalInverseTransform = pScene->mRootNode->mTransformation;
 		m_GlobalInverseTransform.Inverse();
 
-		// No global inverse transform, use youtube comment method to transpose assimp matrices to glm correctly 
 		InitFromScene(pScene, Filename);
 	}
 	else {
@@ -76,33 +66,36 @@ void SkeletalModel::LoadMesh(const std::string& Filename)
 
 void SkeletalModel::InitFromScene(const aiScene* pScene, const std::string& Filename)
 {	
-
 	m_Entries.resize(pScene->mNumMeshes);
 	//m_Textures.resize(pScene->mNumMaterials);
 
 	// Prepare vectors for vertex attributes and indices
-	std::vector<VertexStruct> vertices;
+	std::vector<VertexStruct> vertices; 
 	std::vector<VertexBoneData> bones;
 	std::vector<unsigned int> Indices;
 
 	unsigned int NumVertices = 0;
 	unsigned int NumIndices = 0;
 
-	// Count the number of vertices and indices
 	for (unsigned int i = 0; i < m_Entries.size(); i++) {
 		m_Entries[i].MaterialIndex = pScene->mMeshes[i]->mMaterialIndex;
 
+		// Total mesh indices. 
 		m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * 3;
-		m_Entries[i].BaseVertex = NumVertices;
+
+		// Set the base vertex of this mesh (initial vertex for this mesh within the vertices array) to the current total vertices. 
+ 		m_Entries[i].BaseVertex = NumVertices;
+
+		// Set the base index of this mesh (initial index for this mesh within the indices array) to the current total indices. 
 		m_Entries[i].BaseIndex = NumIndices;
 
+		// Increment total vertices and indices. 
 		NumVertices += pScene->mMeshes[i]->mNumVertices;
 		NumIndices += m_Entries[i].NumIndices;
 	}
 
 	// Reserve space in the vectors for the vertex attributes and indices
-
-	vertices.reserve(NumVertices); // Check this if problems occur
+	vertices.reserve(NumVertices); 
 	bones.resize(NumVertices);
 	Indices.reserve(NumIndices);
 
@@ -129,7 +122,6 @@ void SkeletalModel::InitFromScene(const aiScene* pScene, const std::string& File
 	//gl::EnableVertexAttribArray(2);
 	//gl::VertexAttribPointer(2, 2, gl::FLOAT, FALSE, sizeof(VertexStruct), (GLvoid*)offsetof(VertexStruct, uvs));
 
-
 	// Bind the bone data buffer object
 	gl::BindBuffer(gl::ARRAY_BUFFER, boneBo);
 	gl::BufferData(gl::ARRAY_BUFFER, sizeof(bones[0]) * bones.size(), &bones[0], gl::STATIC_DRAW);
@@ -140,14 +132,13 @@ void SkeletalModel::InitFromScene(const aiScene* pScene, const std::string& File
 	gl::EnableVertexAttribArray(3);
 	gl::VertexAttribPointer(3, 4, gl::FLOAT, FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
 
-
-
 	gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
 	gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0],
 		gl::STATIC_DRAW);
 
-	//gl::GetError() == GL_NO_ERROR;
-
+	vertices.clear();
+	Indices.clear();
+	bones.clear();
 }
 
 const aiNodeAnim* SkeletalModel::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
@@ -186,7 +177,8 @@ void SkeletalModel::InitMesh(unsigned int index, const aiMesh* paiMesh, std::vec
 
 		Vertices.push_back(v);
 	}
-
+	
+	// Load the mesh's bones. 
 	if (paiMesh->HasBones()){
 		LoadBones(index, paiMesh, Bones);
 
@@ -207,29 +199,36 @@ void SkeletalModel::InitMesh(unsigned int index, const aiMesh* paiMesh, std::vec
 void SkeletalModel::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones)
 {
 
+	// Loop through all bones in the Assimp mesh.
 	for (unsigned int i = 0; i < pMesh->mNumBones; i++) {
 
 		unsigned int BoneIndex = 0;
+
+		// Obtain the bone name.
 		std::string BoneName(pMesh->mBones[i]->mName.data);
 
+		// If bone isn't already in the map. 
 		if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
 
+			// Set the bone ID to be the current total number of bones. 
 			BoneIndex = m_NumBones;
+
+			// Increment total bones. 
 			m_NumBones++;
 
+			// Push new bone info into bones vector. 
 			BoneInfo bi;
 			m_BoneInfo.push_back(bi);
 		}
 		else {
+			// Bone ID is already in map. 
 			BoneIndex = m_BoneMapping[BoneName];
 		}
 
 		m_BoneMapping[BoneName] = BoneIndex;
 
-		//m_BoneInfo[BoneIndex].BoneOffset = toGlmMat4(&pMesh->mBones[i]->mOffsetMatrix);
 		m_BoneInfo[BoneIndex].BoneOffset = pMesh->mBones[i]->mOffsetMatrix;
 
-		// Corrected to conversion to glm matrix 
 
 		for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
 
@@ -243,34 +242,10 @@ void SkeletalModel::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::
 	}
 }
 
-
-void SkeletalModel::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
-{
-
-	//unsigned int numIDs = sizeof(IDs) / sizeof(*IDs);
-	
-	//sizeof(array) / sizeof(array[0]
-	for (unsigned int i = 0; i < 4; i++) {
-		if (Weights[i] == 0.0) {
-			IDs[i] = BoneID;
-			Weights[i] = Weight;
-			return;
-		}
-
-	}
-
-	// should never get here - more bones than we have space for
-	assert(0);
-}
-
 void SkeletalModel::BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Transforms)
 {
 	Matrix4f Identity;
 	Identity.InitIdentity();
-
-	
-	//glm::mat4 Identity = glm::mat4(1.0f); //Identity;
-	//Identity.InitIdentity();
 
 	float TicksPerSecond = pScene->mAnimations[0]->mTicksPerSecond != 0 ? pScene->mAnimations[0]->mTicksPerSecond : 25.0f;
 	float TimeInTicks = TimeInSeconds * TicksPerSecond;
@@ -280,25 +255,24 @@ void SkeletalModel::BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Tr
 
 	Transforms.resize(m_NumBones);
 
+	// Populates transforms vector with new bone transformation matrices. 
 	for (unsigned int i = 0; i < m_NumBones; i++) {
 		Transforms[i] = m_BoneInfo[i].FinalTransformation;
 	}
 
 }
 
-
-
-
 unsigned int SkeletalModel::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 {
+	// Check if there are rotation keyframes. 
 	assert(pNodeAnim->mNumRotationKeys > 0);
 
+	// Find the rotation key just before the current animation time and return the index. 
 	for (unsigned int i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++) {
 		if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
 			return i;
 		}
 	}
-
 	assert(0);
 
 	return 0;
@@ -308,12 +282,12 @@ unsigned int SkeletalModel::FindScale(float AnimationTime, const aiNodeAnim* pNo
 {
 	assert(pNodeAnim->mNumScalingKeys > 0);
 
+	// Find the scaling key just before the current animation time and return the index. 
 	for (unsigned int i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++) {
 		if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
 			return i;
 		}
 	}
-
 	assert(0);
 
 	return 0;
@@ -323,17 +297,16 @@ unsigned int SkeletalModel::FindTranslation(float AnimationTime, const aiNodeAni
 {
 	assert(pNodeAnim->mNumPositionKeys > 0);
 
+	// Find the translation key just before the current animation time and return the index. 
 	for (unsigned int i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++) {
 		if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
 			return i;
 		}
 	}
-
 	assert(0);
 
 	return 0;
 }
-
 
 
 void SkeletalModel::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -343,18 +316,28 @@ void SkeletalModel::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationT
 		Out = pNodeAnim->mRotationKeys[0].mValue;
 		return;
 	}
-
+	// Obtain the current rotation keyframe. 
 	unsigned int RotationIndex = FindRotation(AnimationTime, pNodeAnim);
+
+	// Calculate the next rotation keyframe and check bounds. 
 	unsigned int NextRotationIndex = (RotationIndex + 1);
 	assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
+
+	// Calculate delta time, i.e time between the two keyframes.
 	float DeltaTime = pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime;
+
+	// Calculate the elapsed time between the current and next keyframes. 
 	float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
 	assert(Factor >= 0.0f && Factor <= 1.0f);
 
+	// Obtain the quaternions values for the current and next keyframe. 
 	const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
 	const aiQuaternion& EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+
+	// Interpolate between them using the Factor. 
 	aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
 
+	// Normalise and set the reference. 
 	Out = Out.Normalize();
 }
 
@@ -374,7 +357,7 @@ void SkeletalModel::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime
 	assert(Factor >= 0.0f && Factor <= 1.0f);
 	const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
 	const aiVector3D& End= pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-	//aiVector3D::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
+
 	aiVector3D Delta = End - Start;
 	Out = Start + Factor * Delta;
 }
@@ -412,6 +395,7 @@ void SkeletalModel::render() const
 {
 	gl::BindVertexArray(m_VAO);
 
+	// Render all the model's meshes.
 	for (unsigned int i = 0; i < m_Entries.size(); i++) {
 
 		const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
@@ -429,16 +413,18 @@ void SkeletalModel::render() const
 
 void SkeletalModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform)
 {
+	// Obtain the name of the current node 
 	std::string NodeName(pNode->mName.data);
 
+	// Use the first animation 
 	const aiAnimation* pAnimation = pScene->mAnimations[0];
 
-
+	// Obtain transformation relative to node's parent. 
 	Matrix4f NodeTransformation(pNode->mTransformation);
 
-	// Function to check if problems
 	const aiNodeAnim* pNodeAnim = NULL;
 
+	// Find the animation channel of the current node. 
 	for (unsigned i = 0; i < pAnimation->mNumChannels; i++) {
 		const aiNodeAnim* pNodeAnimIndex = pAnimation->mChannels[i];
 
@@ -446,9 +432,6 @@ void SkeletalModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, 
 			pNodeAnim = pNodeAnimIndex;
 		}
 	}
-
-
-	//const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
 	if (pNodeAnim) {
 
@@ -463,7 +446,6 @@ void SkeletalModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, 
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
 		Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
 
-
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
 		CalcInterpolatedTranslation(Translation, AnimationTime, pNodeAnim);
@@ -476,13 +458,14 @@ void SkeletalModel::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, 
 	
 	Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
 	
+
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
 		m_BoneInfo[BoneIndex].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation *
 			m_BoneInfo[BoneIndex].BoneOffset;
 	}
 
-
+	// Do the same for all the node's children. 
 	for (unsigned i = 0; i < pNode->mNumChildren; i++) {
 		ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
 	}

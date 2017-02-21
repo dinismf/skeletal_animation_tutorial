@@ -1,5 +1,4 @@
-// TeapotAD.cpp : Defines the entry point for the console application.
-//
+// APPLICATION ENTRY POINT 
 
 #include "stdafx.h"
 #include <iostream>
@@ -11,11 +10,6 @@
 #include "scene.h"
 
 #include "AnimationScene.h"
-
-
-//#include <string>
-//using std::cout;
-
 
 #include "QuatCamera.h"
 
@@ -114,16 +108,13 @@ void update( float t )
 	if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_MIDDLE) )
 	{
 	
-		camera.roll(deltaX*ROTATE_VELOCITY);
+		camera.roll(deltaX* ROTATE_VELOCITY);
 		
 	}
 		
 	//Store the current cursor position
 	lastCursorPositionX = cursorPositionX;
 	lastCursorPositionY = cursorPositionY;
-
-
-	
 }
 
 
@@ -138,11 +129,11 @@ void mainLoop() {
 		//GLUtils::checkForOpenGLError(__FILE__,__LINE__);
 
 		double fCurrentTime = glfwGetTime();
-		float fInterval = (fCurrentTime - (double)f_startTime) /* 1000.0f*/;
+		float fInterval = (fCurrentTime - (double)f_startTime);
 
 		update(fInterval);
 
-		scene->update(f_startTime, fInterval);
+		scene->update(f_startTime, glfwGetTime());
 
 		scene->render(camera);
 
@@ -167,8 +158,6 @@ void resizeGL(QuatCamera camera, int w, int h ) {
 /////////////////////////////////////////////////////////////////////////////////////////////
 int _tmain(int argc, _TCHAR* argv[])
 {
-
-
 	// Initialize GLFW
 	if( !glfwInit() ) exit( EXIT_FAILURE );
 

@@ -19,6 +19,71 @@ struct VertexStruct
 	glm::vec2 uvs; //!< Vertex uv's
 };
 
+struct BoneInfo
+{
+	Matrix4f FinalTransformation;
+	Matrix4f BoneOffset;
+
+	BoneInfo()
+	{
+		BoneOffset.SetZero();
+		FinalTransformation.SetZero();
+	}
+};
+
+struct VertexBoneData
+{
+	unsigned int IDs[4];
+	float Weights[4];
+
+	VertexBoneData()
+	{
+		// 0's out the arrays. 
+		Reset();
+	}
+
+	void Reset()
+	{
+		memset(IDs, 0, 4 * sizeof(IDs[0]));
+		memset(Weights, 0, 4 * sizeof(Weights[0]));
+	}
+
+	void AddBoneData(unsigned int BoneID, float Weight)
+	{
+		for (unsigned int i = 0; i < 4; i++) {
+			if (Weights[i] == 0.0) {
+				IDs[i] = BoneID;
+				Weights[i] = Weight;
+				return;
+			}
+
+		}
+		// should never get here - more bones than we have space for
+		assert(0);
+	}
+};
+
+#define INVALID_MATERIAL 0xFFFFFFFF
+struct MeshEntry {
+
+	MeshEntry()
+	{
+
+		NumIndices = 0;
+		BaseVertex = 0;
+		BaseIndex = 0;
+		MaterialIndex = INVALID_MATERIAL;
+	}
+
+	~MeshEntry() {}
+
+
+	unsigned int BaseVertex;
+	unsigned int BaseIndex;
+	unsigned int NumIndices;
+	unsigned int MaterialIndex;
+};
+
 class SkeletalModel : public Drawable
 {
 public:
@@ -28,8 +93,6 @@ public:
 
 	void LoadMesh(const std::string& Filename);
 
-	//static const unsigned int MAX_BONES = 100;
-
 	void BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Transforms);
 
 	void SetBoneTransform(unsigned int Index, const Matrix4f& Transform);
@@ -37,37 +100,6 @@ public:
 	void render() const override;
 
 private:
-
-	struct BoneInfo
-	{
-		Matrix4f FinalTransformation;
-		Matrix4f BoneOffset;
-
-		BoneInfo()
-		{
-			BoneOffset.SetZero();
-			FinalTransformation.SetZero(); 
-		}
-	};
-
-	struct VertexBoneData
-	{
-		unsigned int IDs[4];
-		float Weights[4];
-
-		VertexBoneData()
-		{
-			Reset();
-		}
-
-		void Reset()
-		{
-			memset(IDs, 0, 4 * sizeof(IDs[0]));
-			memset(Weights, 0, 4 * sizeof(Weights[0]));
-		}
-
-		void AddBoneData(unsigned int BoneID, float Weight);
-	};
 	
 	void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
 	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -91,33 +123,11 @@ private:
 
 	GLSLProgram* m_pShaderProg;
 
-
-#define INVALID_MATERIAL 0xFFFFFFFF
-
 	GLuint m_VAO;
 	GLuint vbo;
 	GLuint ebo;
 	GLuint boneBo;
 	//GLuint m_boneLocation[100];
-	struct MeshEntry {
-
-		MeshEntry()
-		{
-
-			NumIndices = 0;
-			BaseVertex = 0;
-			BaseIndex = 0;
-			MaterialIndex = INVALID_MATERIAL;
-		}
-
-		~MeshEntry(){}
-
-
-		unsigned int BaseVertex;
-		unsigned int BaseIndex;
-		unsigned int NumIndices;
-		unsigned int MaterialIndex;
-	};
 
 	const aiScene* pScene;
 
@@ -136,5 +146,6 @@ private:
 
 	std::vector<MeshEntry> m_Entries;
 };
+
 
 #endif

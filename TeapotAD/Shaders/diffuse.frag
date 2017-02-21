@@ -3,46 +3,38 @@
 in vec3 vertPos;
 in vec3 N;
 
-struct SpotLightData {
-	vec3 position; // Light position 
-	vec3 intensity;
-	vec3 direction;
-	float exponent;
-	float cutoff;
-};
-uniform SpotLightData Spotlight;
-
-uniform vec3 Ka;	// Ambient reflectivity 
+uniform vec3 lightPos;
+uniform vec3 lightIntensity;
 uniform vec3 Kd;            // Diffuse reflectivity
+uniform vec3 Ka;	// Ambient reflectivity 
 uniform vec3 Ks;	// Specular reflectivity
 uniform float specularShininess;	// Specular shininess 
 
+float dotRV;
+
 layout( location = 0 ) out vec4 FragColour;
 
-vec3 phongWithSpotlight();
+vec3 ads()
+{
+	vec3 n = normalize(N);
+		
+	vec3 l = normalize( vec3(lightPos) - vertPos);
 
-void main() {
-   FragColour = vec4(phongWithSpotlight(), 1.0);
+	float df = max( dot(l,n), 0.0);
+	float sf = 0.0f;
+
+	if (df > 0.0f) 
+	{
+		vec3 v = normalize(vec3(vertPos));
+		vec3 r = reflect(l, n);
+		sf = max(dot(r,v), 0.0f);
+	}
+
+	return lightIntensity * ( Ka + Kd * df  + Ks * pow( sf, specularShininess ));
 }
 
-vec3 phongWithSpotlight()
-{
-	vec3 s = normalize( vec3(Spotlight.position) - vertPos ); // Vector from light to vertex
-    
-	float angle = acos( dot(-s, Spotlight.direction) ); // Angle between
-    
-	float cutoff = radians( clamp(Spotlight.cutoff, 0.0, 90.0) ); // Cutoff angle clamped between 0 and 90 and  converted to radians.
+void main() {
 
-	vec3 ambientComponent = Spotlight.intensity * Ka;		
+   FragColour = vec4(ads(),1.0);
 
-	if (angle < cutoff) {
-		float spotFactor = pow( dot(-s, Spotlight.direction), Spotlight.exponent);
-		
-		vec3 v = normalize(-vertPos);
-		vec3 h = normalize(v + s);
-
-		return ambientComponent + spotFactor * Spotlight.intensity * (Kd * max(dot(s, N), 0.0) + Ks * pow(max(dot(h, N), 0.0), specularShininess));
-	} else {
-		return ambientComponent;  
-	}
 }
