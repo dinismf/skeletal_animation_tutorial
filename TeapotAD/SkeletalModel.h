@@ -19,22 +19,10 @@ struct VertexStruct
 	glm::vec2 uvs; //!< Vertex uv's
 };
 
-struct BoneInfo
-{
-	Matrix4f FinalTransformation;
-	Matrix4f BoneOffset;
-
-	BoneInfo()
-	{
-		BoneOffset.SetZero();
-		FinalTransformation.SetZero();
-	}
-};
-
 struct VertexBoneData
 {
-	unsigned int IDs[4];
-	float Weights[4];
+	unsigned int IDs[4]; //!< An array of 4 bone Ids that influence a single vertex.
+	float Weights[4]; //!< An array of the weight influence per bone. 
 
 	VertexBoneData()
 	{
@@ -51,8 +39,13 @@ struct VertexBoneData
 	void AddBoneData(unsigned int BoneID, float Weight)
 	{
 		for (unsigned int i = 0; i < 4; i++) {
+
+			// Check to see if there are any empty weight values. 
 			if (Weights[i] == 0.0) {
+				// Add ID of bone. 
 				IDs[i] = BoneID;
+
+				// Set the vertex weight influence for this bone ID. 
 				Weights[i] = Weight;
 				return;
 			}
@@ -63,88 +56,98 @@ struct VertexBoneData
 	}
 };
 
+// Stores bone information
+struct BoneInfo
+{
+	Matrix4f FinalTransformation; // Final transformation to apply to vertices 
+	Matrix4f BoneOffset; // Initial offset from local to bone space. 
+
+	BoneInfo()
+	{
+		BoneOffset.SetZero();
+		FinalTransformation.SetZero();
+	}
+};
+
+// A mesh entry for each mesh read in from the Assimp scene. A model is usually consisted of a collection of these. 
 #define INVALID_MATERIAL 0xFFFFFFFF
 struct MeshEntry {
+
+
+	unsigned int BaseVertex; //!< Total number of mesh indices. 
+	unsigned int BaseIndex; //!< The base vertex of this mesh in the vertices array for the entire model.
+	unsigned int NumIndices; //!< The base index of this mesh in the indices array for the entire model. 
+	unsigned int MaterialIndex; 
 
 	MeshEntry()
 	{
 
-		NumIndices = 0;
-		BaseVertex = 0;
-		BaseIndex = 0;
+		NumIndices = 0; 
+		BaseVertex = 0;  
+		BaseIndex = 0; 
 		MaterialIndex = INVALID_MATERIAL;
 	}
 
 	~MeshEntry() {}
-
-
-	unsigned int BaseVertex;
-	unsigned int BaseIndex;
-	unsigned int NumIndices;
-	unsigned int MaterialIndex;
 };
 
 class SkeletalModel : public Drawable
 {
 public:
-	SkeletalModel(GLSLProgram* shaderProgIn);
 
-	~SkeletalModel();
+	SkeletalModel(GLSLProgram* shaderProgIn); //!< Constructor 
 
-	void LoadMesh(const std::string& Filename);
+	~SkeletalModel(); //!< Destructor 
 
-	void BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Transforms);
+	void LoadMesh(const std::string& Filename); //!< Loads an animated mesh from a given file path
 
-	void SetBoneTransform(unsigned int Index, const Matrix4f& Transform);
+	void BoneTransform(float TimeInSeconds, std::vector<Matrix4f>& Transforms); //!< Traverses the scene hierarchy and fetches the matrix transformation for each bone given the time. 
 
-	void render() const override;
+	void SetBoneTransform(unsigned int Index, const Matrix4f& Transform); //!< Inserts a bone transformation in the uniform array at the given index. 
+
+	void render() const override; //!< Renders each mesh in the model. 
 
 private:
 	
-	void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
-	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-	void CalcInterpolatedTranslation(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
+	void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones); //!< Loads the bone data from a given mesh. 
+	void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim); //!< Calculates the interpolated quaternion between two keyframes. 
+	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim); //!< Calculates the interpolated scaling vector between two keyframes. 
+	void CalcInterpolatedTranslation(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim); //!< Calculates the interpolated translation vector between two keyframes. 
 
-	unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	unsigned int FindScale(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	unsigned int FindTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-	const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform /*const glm::mat4& ParentTransform*/);
+	unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim); //!< Finds a rotation key given the current animation time. 
+	unsigned int FindScale(float AnimationTime, const aiNodeAnim* pNodeAnim); // Finds a scaling key given the current animation time. 
+	unsigned int FindTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim); // Finds a translation key given the current animation time. 
+
+	void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform); //!< Recursive function that traverses the scene's node hierarchy and combines the matrix transformations. 
 
 
-	void InitFromScene(const aiScene* pScene, const std::string& Filename);
-	void InitMesh(unsigned int index, const aiMesh* paiMesh, std::vector<VertexStruct>& Vertices,
-		std::vector<GLuint>& Indices, std::vector<VertexBoneData>& Bones);
+	void InitFromScene(const aiScene* pScene, const std::string& Filename); //!< Prepares the model for rendering. 
+	void InitMesh(unsigned int index, const aiMesh* paiMesh, std::vector<VertexStruct>& Vertices, 
+		std::vector<GLuint>& Indices, std::vector<VertexBoneData>& Bones); //!< Fetches mesh data from given Assimp mesh. 
 
-	bool InitMaterials(const aiScene* pScene, const std::string& Filename);
-
-	void Clear();
+	void Clear(); //!< Deletes the vertex array object. 
 
 	GLSLProgram* m_pShaderProg;
 
-	GLuint m_VAO;
-	GLuint vbo;
-	GLuint ebo;
-	GLuint boneBo;
-	//GLuint m_boneLocation[100];
+	GLuint m_VAO; // Vertex array object. 
+	GLuint vbo; //!< Vertex buffer object. 
+	GLuint ebo; //!< Indices buffer object. 
+	GLuint boneBo; //!< Bone data buffer object. 
 
-	const aiScene* pScene;
+	const aiScene* pScene; //!< The Assimp aiScene object. 
 
-	Assimp::Importer Importer;
+	Assimp::Importer Importer; //!< Assimp importer object for reading in files into the aiScene. 
 
-	unsigned int m_NumBones;
+	unsigned int m_NumBones; //!< Total number of bones in the model. 
 
 	std::map<std::string, unsigned int> m_BoneMapping; //!< Map of bone names to ids
 
-	std::vector<BoneInfo> m_BoneInfo;
+	std::vector<BoneInfo> m_BoneInfo; //!< Array containing bone information such as offset matrix and final transformation. 
 	
-	Matrix4f GlobalTransformation;
-	Matrix4f m_GlobalInverseTransform;
+	Matrix4f GlobalTransformation; //!< Root node transformation. 
+	Matrix4f m_GlobalInverseTransform; 
 
-	glm::mat4 toGlmMat4(const aiMatrix4x4* ai);
-
-	std::vector<MeshEntry> m_Entries;
+	std::vector<MeshEntry> m_Entries; //!< Array of mesh entries 
 };
 
 

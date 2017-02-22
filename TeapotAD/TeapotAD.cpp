@@ -133,7 +133,7 @@ void mainLoop() {
 
 		update(fInterval);
 
-		scene->update(f_startTime, glfwGetTime());
+		scene->update(f_startTime, fCurrentTime);
 
 		scene->render(camera);
 
